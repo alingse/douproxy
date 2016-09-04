@@ -170,4 +170,4 @@ def book_v2(isbn=None,bookid=None):
 
 
 if __name__ == '__main__':
-    app.run(host=const.ALLOW_HOST, port=const.PORT,debug=True)
+    app.run(host=const.ALLOW_HOST, port=const.PORT,debug=False)
