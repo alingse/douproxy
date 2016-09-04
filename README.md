@@ -36,11 +36,11 @@ date:2016.08.28
   
   `GET` `/api/{version}/book/isbn/{isbn}`
   
-  <s>`GET` `/api/{version}/book/{bookid}`</s>
+  `GET` `/api/{version}/book/{bookid}`(`v1.1` 版本没有此api)
   
-  以及单独的API
+  以及 `v1.0` 中单独的api
 
-  `GET` `/api/v1.0/book/name/机器学习`
+  `GET` `/api/v1.0/book/name/{name }`
 
   其中`version`即上面提到的`v1.0`,`v1.1`,`v2.0`三种
   
@@ -48,7 +48,7 @@ date:2016.08.28
   
   相关链接示例:
   
- `http://127.0.0.1:8001/api/v1.1/book/isbn/9787302275954`
+  `http://douproxy.note-show.com/api/v1.1/book/isbn/9787302275954`
  
 #### 返回  
  返回的json数据格式为
