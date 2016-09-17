@@ -10,7 +10,10 @@ date:2016.08.28
 
 项目: 提供根据`isbn` 来请求相关的豆瓣API获取相应图书信息的接口
 
-目前挂靠于 **`douproxy.note-show.com`** 下，示例 [http://douproxy.note-show.com/api/v2.0/book/isbn/9787302275954](http://douproxy.note-show.com/api/v2.0/book/isbn/9787302275954) 
+目前挂靠于 **`douproxy.note-show.com`** 下
+
+示例 [http://douproxy.note-show.com/api/v2.0/book/isbn/9787302275954](http://douproxy.note-show.com/api/v2.0/book/isbn/9787302275954)
+
 ## 介绍
 
  源代码在`./douban/` 目录下
