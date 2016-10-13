@@ -18,7 +18,7 @@ cache = Cache(disk=DiskCache())
 
 #for log
 app.config.logging.logfile = sdict(
-    level="warning",
+    level="debug",
     max_size=10*1024*1024,
     on_app_debug=True,
 )
@@ -48,7 +48,7 @@ def vjson(version):
 
 def gen_code_info(code,data=None):
     #log
-    app.log.info(u'gen info code:{},msg:{}'.format(code,const.MSG[code]))
+    app.log.warning(u'gen info code:{},msg:{}'.format(code,const.MSG[code]))
 
     info = {
         'code':code,
@@ -68,16 +68,19 @@ def bookinfo_v1(bookid):
     status,info = cache(bookid,cache_get_v1,3*24*60*60)
     app.log.info('v1:bookid:{},info-status:{}'.format(bookid,status))
 
-    if status == True:
+    if status == True:        
         return gen_code_info(const.SUCCESS,data=info)
     if status == False:
+        cache.clear(key=bookid)
         return gen_err(const.TIMEOUT)
     if status == 404:
         return gen_err(const.NOT_FOUND)
     if status == 403:
+        cache.clear(key=bookid)
         return gen_err(const.FORBIDDEN)
     #unknow
     app.log.debug('v1:{},http:{},content:{}'.format(bookid,status,info))
+    cache.clear(key=bookid)
     return gen_err(const.UNKNOW_ERR)
 
 
@@ -86,21 +89,23 @@ def bookinfo_v2(url):
         res = get_info_byurl(url)
         return res
 
-    info = cache(url,cache_get_v2,3*24*60*60)
+    info = cache(url,cache_get_v2,3*24*60*60)    
     app.log.info('v2:bookurl:{},info'.format(url))
 
-    if info == None:
+    if info == None:        
         return gen_err(const.TIMEOUT)
     if 'code' not in info:
         return gen_code_info(const.SUCCESS,data=info)
 
     code = info['code']
-    if code == 404:
+    if code == 404:        
         return gen_err(const.NOT_FOUND)
     if code == 403:
+        cache.clear(key=url)
         return gen_err(const.FORBIDDEN)
     #unknow
     app.log.debug('v2:bookurl:{},info:http:{},content:{}'.format(url,code,info))
+    cache.clear(key=url)
     return gen_err(const.UNKNOW_ERR)
 
 
