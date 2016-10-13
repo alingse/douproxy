@@ -6,6 +6,7 @@ from random import choice
 
 import requests
 import json
+import uuid
 import sys
 
 user_agents = [
@@ -34,15 +35,35 @@ accepts = [
 def get_info(id,category='book'):
     try:
         headers = {
-            'User-Agent': choice(user_agents),
-            'Accept': choice(accepts),
+            "Accept-Language": "zh-CN,zh;q=0.8,en;q=0.6", 
+            "Accept-Encoding": "gzip, deflate, sdch, br", 
+            "Host": "api.douban.com", 
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8", 
+            "Upgrade-Insecure-Requests": "1", 
+            "Connection": "keep-alive", 
+            "Pragma": "no-cache", 
+            "Cache-Control": "no-cache", 
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
         }
 
         cookies = {
-            'viewed':'"{}"'.format(id)
+            "ps": "y", 
+            "__utmz": "30149280.1476369702.7.6.utmcsr=baidu|utmccn=(organic)|utmcmd=organic", 
+            "regpop": "1", 
+            "bid": "5-PQxwnaP2E", 
+            "__utmt_douban": "1", 
+            "__utmt": "1", 
+            "ap": "1", 
+            "gr_user_id": str(uuid.uuid4()), 
+            "__utma": "30149280.1766249388.1473671047.1475685017.1476369702.7", 
+            "__utmb": "30149280.8.10.1476369702", 
+            "__utmc": "30149280", 
+            "ll": "\\\"108288\\\"", 
+            "viewed": "\\\"{}\\\"".format(id), 
+            "ct": "y"
         }
 
-        url = 'http://api.douban.com/v2/{}/{}'.format(category, id)
+        url = 'https://api.douban.com/v2/{}/{}'.format(category, id)
         r = requests.get(url,headers=headers,cookies=cookies,
                             timeout=3,allow_redirects=False)
         if r.status_code == 200:        
