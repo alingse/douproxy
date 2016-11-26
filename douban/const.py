@@ -1,7 +1,6 @@
-# -*- coding=utf-8 -*-
-#copy from iceihehe
-#modify
-#2016.08.07
+# coding=utf-8
+# 2016.08.07
+
 
 class _const:
     class ConstError(TypeError):
@@ -16,10 +15,7 @@ class _const:
 
         self.__dict__[name] = value
 
-import sys
-sys.modules[__name__] = _const()
-
-import const
+const = _const()
 
 const.SUCCESS = 100000
 const.NOT_FOUND = 200404
@@ -28,11 +24,11 @@ const.FORBIDDEN = 200403
 const.UNKNOW_ERR = 200999
 
 const.MSG = {
-    const.SUCCESS:u'成功了',
-    const.NOT_FOUND:u'没找到这个哎',
-    const.TIMEOUT:u'请求超时了呀',
-    const.FORBIDDEN:u'被屏蔽了呢',
-    const.UNKNOW_ERR:u'未知错误'
+    const.SUCCESS: u'sucess',
+    const.NOT_FOUND: u'没找到这个哎',
+    const.TIMEOUT: u'请求超时了呀',
+    const.FORBIDDEN: u'被屏蔽了呢',
+    const.UNKNOW_ERR: u'未知错误'
 }
 
 const.PORT = 8001

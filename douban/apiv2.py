@@ -1,13 +1,12 @@
-#coding=utf-8
-#author@alingse
-#2016.08.07
+# coding=utf-8
+# author@alingse
+# 2016.08.07
 
-from random import choice
-
+# from random import choice
 import requests
-import json
 import uuid
-import sys
+import json
+
 
 user_agents = [
     'Mozilla/4.8 [en] (Windows NT 6.0; U)',
@@ -32,56 +31,65 @@ accepts = [
     '*/*',
 ]
 
-def get_info(id,category='book'):
+
+def get_info(id, category='book'):
     try:
         headers = {
-            "Accept-Language": "zh-CN,zh;q=0.8,en;q=0.6", 
-            "Accept-Encoding": "gzip, deflate, sdch, br", 
-            "Host": "api.douban.com", 
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8", 
-            "Upgrade-Insecure-Requests": "1", 
-            "Connection": "keep-alive", 
-            "Pragma": "no-cache", 
-            "Cache-Control": "no-cache", 
+            "Accept-Language": "zh-CN,zh;q=0.8,en;q=0.6",
+            "Accept-Encoding": "gzip, deflate, sdch, br",
+            "Host": "api.douban.com",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Upgrade-Insecure-Requests": "1",
+            "Connection": "keep-alive",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache",
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
         }
 
         cookies = {
-            "ps": "y", 
-            "__utmz": "30149280.1476369702.7.6.utmcsr=baidu|utmccn=(organic)|utmcmd=organic", 
-            "regpop": "1", 
-            "bid": "5-PQxwnaP2E", 
-            "__utmt_douban": "1", 
-            "__utmt": "1", 
-            "ap": "1", 
-            "gr_user_id": str(uuid.uuid4()), 
-            "__utma": "30149280.1766249388.1473671047.1475685017.1476369702.7", 
-            "__utmb": "30149280.8.10.1476369702", 
-            "__utmc": "30149280", 
-            "ll": "\\\"108288\\\"", 
-            "viewed": "\\\"{}\\\"".format(id), 
+            "ps": "y",
+            "__utmz": "30149280.1476369702.7.6.utmcsr=baidu|utmccn=(organic)|utmcmd=organic",
+            "regpop": "1",
+            "bid": "5-PQxwnaP2E",
+            "__utmt_douban": "1",
+            "__utmt": "1",
+            "ap": "1",
+            "gr_user_id": str(uuid.uuid4()),
+            "__utma": "30149280.1766249388.1473671047.1475685017.1476369702.7",
+            "__utmb": "30149280.8.10.1476369702",
+            "__utmc": "30149280",
+            "ll": "\\\"108288\\\"",
+            "viewed": "\\\"{}\\\"".format(id),
             "ct": "y"
         }
 
         url = 'https://api.douban.com/v2/{}/{}'.format(category, id)
-        r = requests.get(url,headers=headers,cookies=cookies,
-                            timeout=3,allow_redirects=False)
-        if r.status_code == 200:        
-            return True,r.json()
+        r = requests.get(
+            url,
+            headers=headers,
+            cookies=cookies,
+            timeout=3,
+            allow_redirects=False)
 
-        return r.status_code,r.content
+        code = r.status_code
+        if code == 200:
+            return True, r.json()
+        return code, r.content
+    except Exception:
+        pass
 
-    except Exception as e:
-        return False,None
+    return False, None
+
 
 if __name__ == '__main__':
-    id = '2708965'
-    category='book'
-    if len(sys.argv) == 2:
-        id = sys.argv[1]
-    if len(sys.argv) == 3:
-        category = sys.argv[2]
-    status,result = get_info(id,category)
-    print(status)
-    print(json.dumps(result,ensure_ascii=False).encode('utf-8'))
+    import sys
 
+    id = '2708965'
+    category = 'book'
+    if len(sys.argv) >= 2:
+        id = sys.argv[1]
+        category = sys.argv[2]
+
+    status, result = get_info(id, category)
+    print(status)
+    print(json.dumps(result, ensure_ascii=False).encode('utf-8'))
