@@ -70,9 +70,9 @@ def search_pc(text):
 
         html = r.content.decode('utf-8')
         if r.status_code != 200:
-            return False
+            return False, None
     except Exception:
-        return None
+        return None, None
 
     htmld = pq(html)
     booklist = []
@@ -92,10 +92,10 @@ def search_pc(text):
 
         booklist.append(book)
 
-    return booklist
+    return True, booklist
 
 if __name__ == '__main__':
     name = '9780262182539'
     # name = u'机器学习'
-    booklist = search_pc(name)
+    status, booklist = search_pc(name)
     print(booklist)

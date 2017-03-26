@@ -25,11 +25,12 @@ const.UNKNOW_ERR = 200999
 
 const.MSG = {
     const.SUCCESS: u'sucess',
-    const.NOT_FOUND: u'没找到这个哎',
-    const.TIMEOUT: u'请求超时了呀',
-    const.FORBIDDEN: u'被屏蔽了呢',
-    const.UNKNOW_ERR: u'未知错误'
+    const.NOT_FOUND: u'notfound',
+    const.TIMEOUT: u'timeout',
+    const.FORBIDDEN: u'forbidden',
+    const.UNKNOW_ERR: u'unknow'
 }
 
+const.CACHE_TIME = 3 * 24 * 60 * 60
 const.PORT = 8001
 const.ALLOW_HOST = '127.0.0.1'

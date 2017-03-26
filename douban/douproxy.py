@@ -7,9 +7,10 @@ import json
 
 from weppy import App
 from weppy import Cache
-from weppy.cache import DiskCache
+from weppy import request
 from weppy import response
 from weppy import sdict
+from weppy.cache import DiskCache
 
 from apiv2_frodo import id_url
 from apiv2_frodo import isbn_url
@@ -23,13 +24,13 @@ from const import const
 
 app = App(__name__)
 
-cache = Cache(disk=DiskCache())
-
 app.config.logging.logfile = sdict(
     level="debug",
-    max_size=10*1024*1024,
-    on_app_debug=True,
+    max_size=100*1024*1024
 )
+
+cache = Cache(disk=DiskCache())
+cache.clear = cache.disk.clear
 
 
 def vjson(version):
@@ -45,65 +46,93 @@ def vjson(version):
 
 
 def gen_code_info(code, data=None):
-    # log
-    app.log.warning(u'gen info code:{},msg:{}'.format(code, const.MSG[code]))
-
     info = {
         'code': code,
         'msg': const.MSG[code],
         'data': data,
     }
+    app.log.error(u'gen info code:%d, msg:%s', code, const.MSG[code])
     return info
 
-gen_err = gen_code_info
+
+def gen_err(code):
+    # request.path
+    # app.log.error('')    
+    return gen_code_info(code)
+
+
+def search_bookid(text):
+    def cache_search():
+        return search_pc(text.decode('utf-8'))
+
+    status, booklist = cache(text, cache_search, 60)
+
+    if status is None:
+        cache.clear(key=text)
+        return gen_err(const.TIMEOUT)
+    elif status is False:
+        cache.clear(key=text)
+        return gen_err(const.FORBIDDEN)
+    elif type(booklist) != list:
+        cache.clear(key=text)
+        return gen_err(const.UNKNOW_ERR)
+
+    if len(booklist) == 0:
+        app.log.error('not found')
+        return gen_err(const.NOT_FOUND)
+    return booklist[0]['id']
 
 
 def bookinfo_v1(bookid):
     def cache_get_v1():
         return get_info_byid(bookid)
 
-    status, info = cache(bookid, cache_get_v1, 3*24*60*60)
-    app.log.info('v1:bookid:{},info-status:{}'.format(bookid, status))
+    status, info = cache(bookid, cache_get_v1, const.CACHE_TIME)
+
+    app.log.info('v1:bookid:%s, info-status:%d', bookid, status)
 
     if status is True:
         return gen_code_info(const.SUCCESS, data=info)
-    if status is False:
+    elif status is False:
         cache.clear(key=bookid)
         return gen_err(const.TIMEOUT)
-    if status == 404:
+    elif status == 404:
         return gen_err(const.NOT_FOUND)
-    if status == 403:
+    elif status == 403:
         cache.clear(key=bookid)
         return gen_err(const.FORBIDDEN)
-    # unknow
-    app.log.debug('v1:{},http:{},content:{}'.format(bookid, status, info))
-    cache.clear(key=bookid)
-    return gen_err(const.UNKNOW_ERR)
+    else:
+        app.log.info('v1:bookid:%s, status:%s, content:%s', bookid, status, info)
+
+        cache.clear(key=bookid)        
+        return gen_err(const.UNKNOW_ERR)
 
 
 def bookinfo_v2(url):
     def cache_get_v2():
         return get_info_byurl(url)
 
-    info = cache(url, cache_get_v2, 3*24*60*60)
-    app.log.info('v2:bookurl:{},info'.format(url))
+    info = cache(url, cache_get_v2, const.CACHE_TIME)
+
+    app.log.info('v1:bookurl:%s, info-status:-', url)
 
     if info is None:
         return gen_err(const.TIMEOUT)
-    if 'code' not in info:
+    elif 'code' not in info:
         return gen_code_info(const.SUCCESS, data=info)
 
     code = info['code']
+
     if code == 404:
         return gen_err(const.NOT_FOUND)
-    if code == 403:
+    elif code == 403:
         cache.clear(key=url)
         return gen_err(const.FORBIDDEN)
+    else:
+        app.log.error('v2:bookurl:%s, status: %s,content: %s', url, code, info)
 
-    # unknow
-    app.log.debug('v2:bookurl:{},info:http:{},content:{}'.format(url, code, info))
-    cache.clear(key=url)
-    return gen_err(const.UNKNOW_ERR)
+        cache.clear(key=url)
+        return gen_err(const.UNKNOW_ERR)
 
 
 @app.route('/api/v1.0/book/isbn/<int:isbn>')
@@ -112,38 +141,18 @@ def bookinfo_v2(url):
 @vjson(version='1.0')
 def book_pc_v1(isbn=None, bookid=None, name=None):
     text = None
-    if isbn is not None:
+    if isbn:
         text = isbn
-    if name is not None:
+    elif name:
         text = name.strip()
 
-    def cache_search():
-        return search_pc(text.decode('utf-8'))
-
-    if bookid is None and text is not None:
-        # req search
-        booklist = cache(text, cache_search, 15)
-        # search err
-
-        if len(booklist) == 0:
-            return gen_err(const.NOT_FOUND)
-
-        if type(booklist) != list:
-            app.log.info('search:text:{},booklist:{}'.format(text, booklist))
-            if booklist is None:
-                cache.clear(key=text)
-                return gen_err(const.TIMEOUT)
-            elif booklist is False:
-                cache.clear(key=text)
-                return gen_err(const.FORBIDDEN)
-            else:
-                cache.clear(key=text)
-                return gen_err(const.UNKNOW_ERR)
-
-        # search true/ choose first
-        bookid = booklist[0]['id']
-        app.log.info('search:text:{},bookid:{}'.format(text, bookid))
-
+    if not bookid:
+        result = search_bookid(text)
+        if isinstance(result, dict):
+            return result
+        
+        bookid = result
+        app.log.info('search:text:%s, bookid:%s', text, bookid)
     return bookinfo_v1(bookid)
 
 
@@ -151,30 +160,30 @@ def book_pc_v1(isbn=None, bookid=None, name=None):
 @app.route('/api/v1.1/book/<int:bookid>')
 @vjson(version='1.1')
 def book_v2_v1(isbn=None, bookid=None):
-    if isbn is not None:
+    if isbn:
         url = isbn_url(isbn)
-    if bookid is not None:
+    elif bookid:
         url = id_url(bookid)
 
-    res = bookinfo_v2(url)
-    if res['code'] != const.SUCCESS:
-        return res
+    result = bookinfo_v2(url)
+    if result['code'] != const.SUCCESS:
+        return result
 
-    bookid = res['data']['id']
+    bookid = result['data']['id']
     return bookinfo_v1(bookid)
 
 
 @app.route('/api/v2.0/book/isbn/<int:isbn>')
 @app.route('/api/v2.0/book/<int:bookid>')
-@vjson(version=2.0)
+@vjson(version='2.0')
 def book_v2(isbn=None, bookid=None):
-    if isbn is not None:
+    if isbn:
         url = isbn_url(isbn)
-    if bookid is not None:
+    elif bookid:
         url = id_url(bookid)
 
     return bookinfo_v2(url)
 
 
 if __name__ == '__main__':
-    app.run(host=const.ALLOW_HOST, port=const.PORT, debug=False)
+    app.run(host=const.ALLOW_HOST, port=const.PORT)
