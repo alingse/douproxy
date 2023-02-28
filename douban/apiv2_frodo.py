@@ -47,9 +47,9 @@ if __name__ == '__main__':
     isbn = '9787302275954'
     url = isbn_url(isbn)
     result = get_info(url)
-    print(json.dumps(result, ensure_ascii=False).encode('utf-8'))
+    print(json.dumps(result, ensure_ascii=False))
 
     id = '10590856'
     url = id_url(id)
     result = get_info(url)
-    print(json.dumps(result, ensure_ascii=False).encode('utf-8'))
+    print(json.dumps(result, ensure_ascii=False))

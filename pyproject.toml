@@ -1,0 +1,18 @@
+[tool]
+[tool.pdm]
+
+[project]
+name = "douproxy"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "alingse", email = "alingse@foxmail.com"},
+]
+dependencies = ["requests==2.2.1", "weppy==0.7.8", "pyquery"]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
