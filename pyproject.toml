@@ -8,7 +8,7 @@ description = ""
 authors = [
     {name = "alingse", email = "alingse@foxmail.com"},
 ]
-dependencies = ["requests==2.2.1", "weppy==0.7.8", "pyquery"]
+dependencies = ["requests", "weppy", "pyquery"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "Apache-2.0"}
